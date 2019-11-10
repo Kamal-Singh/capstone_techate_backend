@@ -12,9 +12,9 @@ let Schema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        default: '123456'
     },
-    class: {
+    section: {
         type: String,
         default: 'Not Alloted'
     },
