@@ -13,7 +13,7 @@ let Schema = new mongoose.Schema({
         type: String,
         required: true
     },
-    class: {
+    section: {
         type: String,
         required: true,
         default: 'Not Alloted'

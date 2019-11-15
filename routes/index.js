@@ -6,7 +6,8 @@ var express = require('express'),
     multer = require('multer'),
     fs = require('fs'),
     path = require('path'),
-    { spawn } = require('child_process'),
+    qrcode = require('qrcode-generator'),
+{ spawn } = require('child_process'),
     DOWNLOAD_PATH = require('../config').DOWNLOAD_PATH,
     ENCODING_PATH = require('../config').ENCODING_PATH
 
@@ -30,6 +31,12 @@ create_encoding_script = function (file_path, save_path, person_name) {
     return spawn('python3', ["-u", path.join(__dirname, '../scripts/create_encodings.py'),
         file_path, save_path, person_name])
 }
+
+check_image_script = function (file_path, encodings_path) {
+    return spawn('python3', ["-u", path.join(__dirname, './scripts/check_image.py'),
+        file_path, encodings_path], { stdio: [null, null, null, 'ipc'] });
+}
+
 
 router.get('/', function (req, res) {
     res.render('login');
@@ -83,22 +90,21 @@ router.get('/teacher_form', middleware.isLoggedIn, function (req, res) {
 
 router.post('/add_student', middleware.isLoggedIn, upload.single('image'), function (req, res) {
     const file = req.file
-    if(!file)
-    {
-      req.flash('error', "Image Not Uploaded");
-      return res.redirect('/student_form');
+    if (!file) {
+        req.flash('error', "Image Not Uploaded");
+        return res.redirect('/student_form');
     }
     let filename = req.body.registration;
     let save_path = ENCODING_PATH;
-    const subprocess = create_encoding_script(file.path,save_path,filename)
+    const subprocess = create_encoding_script(file.path, save_path, filename)
     subprocess.stdout.on('data', (data) => {
-      console.log(`${data}`);
+        console.log(`${data}`);
     });
     subprocess.stderr.on('data', (data) => {
-      console.log(`error:${data}`);
+        console.log(`error:${data}`);
     });
     subprocess.stderr.on('close', () => {
-      console.log("Spawn Completed");
+        console.log("Spawn Completed");
     });
     let student = {
         name: req.body.name,
@@ -150,36 +156,32 @@ router.post('/search', middleware.isLoggedIn, function (req, res) {
     });
 });
 
-router.post('/edit_images', middleware.isLoggedIn, function(req,res) {
+router.post('/edit_images', middleware.isLoggedIn, function (req, res) {
     let registration = req.body.registration;
-    console.log(req.body);
-    if(!registration)
-    {
+    if (!registration) {
         req.flash('error', 'No registration number mentioned!!');
         return res.redirect('/home');
     }
     res.render('edit_images', { registration: registration });
 });
 
-router.post('/update_images', middleware.isLoggedIn, upload.single('image'), function(req,res) {
+router.post('/update_images', middleware.isLoggedIn, upload.single('image'), function (req, res) {
     const file = req.file
-    if(!file)
-    {
-      req.flash('error', "Image Not Uploaded");
-      return res.redirect('/');
+    if (!file) {
+        req.flash('error', "Image Not Uploaded");
+        return res.redirect('/');
     }
     let filename = req.body.registration;
-    console.log(filename);
     let save_path = ENCODING_PATH;
-    const subprocess = create_encoding_script(file.path,save_path,filename)
+    const subprocess = create_encoding_script(file.path, save_path, filename)
     subprocess.stdout.on('data', (data) => {
-      console.log(`${data}`);
+        console.log(`${data}`);
     });
     subprocess.stderr.on('data', (data) => {
-      console.log(`error:${data}`);
+        console.log(`error:${data}`);
     });
     subprocess.stderr.on('close', () => {
-      console.log("Spawn Completed");
+        console.log("Spawn Completed");
     });
     req.flash('success', "Image Updated Sucessfully");
     res.redirect('/home');
@@ -191,4 +193,69 @@ router.get('/logout', function (req, res) {
     res.redirect('/');
 });
 
+
+//===================================
+//      API ROUTES
+//===================================
+router.get('/api/', function (req, res) {
+    let result = {};
+    db.Student.find({}, function (err, studentData) {
+        if (err) {
+            result.student = [];
+        } else {
+            result.student = studentData;
+            // console.log(studentData);
+        }
+    });
+    db.Teacher.find({}, function (err, teacherData) {
+        if (err) {
+            result.teacher = [];
+        } else {
+            result.teacher = teacherData;
+            // console.log(teacherData);
+            res.status(200).json(result);
+        }
+    });
+    res.status(500);
+});
+
+// QR CODE
+router.get('/api/qrcode/open', function (req, res) {
+    // let message = Date.now().toString();
+    let message = '123456';
+    let typeNumber = 4;
+    let errorCorrectionLevel = 'L';
+    let qr = qrcode(typeNumber, errorCorrectionLevel);
+    qr.addData(message);
+    qr.make();
+    let result = qr.createImgTag(5);
+    db.QR.create({code: message }, function(err,newQR){
+        if(err) {
+            res.status(500).json({'message': 'Unable to create QRCode'});
+        } else {
+            res.status(200).send(result);
+        }
+    });
+});
+router.get('/api/qrcode/close/:code', function(req,res) {
+    let code = req.params.code;
+    db.QR.findOneAndRemove({code:code}, function(err, removedQR){
+        if(err) {
+            res.status(500).json({'message': 'Invalid QRCode!!'});
+        } else {
+            res.status(200).json(removedQR);
+        }
+    });
+});
+router.get('/api/qrcode/:code/:registration', function(req,res) {
+    let registration = req.params.registration;
+    let code = req.params.code;
+    db.QR.findOneAndUpdate({code:code},{$addToSet: {students: registration} }, function(err,updatedQR){
+        if(err) {
+            res.status(500).json({'message': 'Invalid QRCode!!'});
+        } else {
+            res.status(200).json({'message': 'Attendance Marked Successfully'});
+        }
+    })
+});
 module.exports = router;
