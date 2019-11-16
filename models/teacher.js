@@ -15,12 +15,10 @@ let Schema = new mongoose.Schema({
     },
     section: {
         type: String,
-        required: true,
         default: 'Not Alloted'
     },
     mobile: {
         type: String,
-        required: true
     },
     email: {
         type: String,

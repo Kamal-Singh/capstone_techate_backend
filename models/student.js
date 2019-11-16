@@ -7,7 +7,6 @@ let Schema = new mongoose.Schema({
     },
     registration: {
         type: Number,
-        unique: true,
         required: true
     },
     password: {
