@@ -7,6 +7,7 @@ const express = require('express'),
     flash = require('connect-flash'),
     methodOverride = require('method-override'),
     db = require('./models'),
+    cors = require('cors'),
     path = require('path');
 
 // Setting Up Enviornment Variables
@@ -18,6 +19,7 @@ const PORT = process.env.PORT || 3000;
 let authRoutes = require('./routes/index')
 
 // Setting Up Middlewares
+app.use(cors());
 mongoose.connect(DATABASE_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true
