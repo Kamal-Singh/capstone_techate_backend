@@ -304,7 +304,29 @@ router.post('/api/testimage', upload.single('image'), (req,res,next) => {
       console.log("Spawn Completed");
       faces = faces.map((i) => { return i.replace(/\n|\r/g, ""); });
       console.log(faces);
-      res.send(faces);
+      db.Store.remove({},function(err,tmpStore){
+          if(err)
+          {
+              res.status(500);
+          } else {
+              db.Store.create({students: faces},function(err,newStore){
+                  if(err) {
+                      res.status(500);
+                  } else {
+                      res.status(200);
+                  }
+              })
+          }
+      });
     });
 });
+router.get('/api/testimage', function(req,res){
+    db.Store.find({},function(err,foundStore){
+        if(err) {
+            res.status(500).send({'message': 'Some Error Occured!!'});
+        } else {
+            res.status(200).send(foundStore);
+        }
+    });
+})
 module.exports = router;
