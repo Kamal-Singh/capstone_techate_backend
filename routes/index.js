@@ -307,13 +307,13 @@ router.post('/api/testimage', upload.single('image'), (req,res,next) => {
       db.Store.remove({},function(err,tmpStore){
           if(err)
           {
-              res.status(500);
+            res.status(500).send({'message': 'Some Error Occured!!'});
           } else {
               db.Store.create({students: faces},function(err,newStore){
                   if(err) {
-                      res.status(500);
+                    res.status(500).send({'message': 'Some Error Occured!!'});
                   } else {
-                      res.status(200);
+                      res.status(200).send(faces);
                   }
               })
           }
