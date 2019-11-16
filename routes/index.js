@@ -129,7 +129,7 @@ router.post('/add_student', middleware.isLoggedIn, upload.single('image'), funct
 router.post('/add_teacher', middleware.isLoggedIn, function (req, res) {
     let teacher = {
         name: req.body.name,
-        registration: req.body.registration,
+        registration: 't' + req.body.registration,
         mobile: req.body.mobile,
         email: req.body.email,
         section: req.body.section || 'Not Alloted',
