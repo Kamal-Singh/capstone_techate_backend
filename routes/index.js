@@ -108,14 +108,9 @@ router.post('/add_student', middleware.isLoggedIn, upload.single('image'), funct
     subprocess.stderr.on('close', () => {
         console.log("Spawn Completed");
     });
-    let student = {
-        name: req.body.name,
-        registration: req.body.registration,
-        mobile: req.body.mobile,
-        email: req.body.email,
-        section: req.body.section || 'Not Alloted',
-        password: req.body.password || '123456'
-    };
+    let student = req.body;
+    student.section = student.section || 'Not Alloted';
+    student.password = student.password || '123456';
     db.Student.create(student, function (err, newStudent) {
         if (err) {
             req.flash('error', err.message);
@@ -128,7 +123,7 @@ router.post('/add_student', middleware.isLoggedIn, upload.single('image'), funct
 
 router.post('/add_teacher', middleware.isLoggedIn, function (req, res) {
     let teacher = {
-        name: req.body.name,
+        username: req.body.username,
         registration: 't' + req.body.registration,
         mobile: req.body.mobile,
         email: req.body.email,
@@ -259,6 +254,7 @@ router.get('/api/qrcode/:code/:registration', function (req, res) {
         if (err) {
             res.status(500).json({ 'message': 'Invalid QRCode!!' });
         } else {
+            console.log(updatedQR);
             res.status(200).json({ 'message': 'Attendance Marked Successfully' });
         }
     })
