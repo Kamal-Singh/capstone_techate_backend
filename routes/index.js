@@ -304,7 +304,7 @@ router.post('/api/testimage', upload.single('image'), (req,res,next) => {
       console.log("Spawn Completed");
       faces = faces.map((i) => { return i.replace(/\n|\r/g, ""); });
       console.log(faces);
+      res.send(faces);
     });
-    res.send(faces);
 });
 module.exports = router;
