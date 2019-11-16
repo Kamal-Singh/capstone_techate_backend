@@ -17,7 +17,7 @@ const SECRET_KEY = process.env.SECRET_KEY || '123456';
 // Setting Storage
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        console.log("file uploaded")
+        console.log("file uploaded to "+DOWNLOAD_PATH)
         cb(null, DOWNLOAD_PATH)
     },
     filename: function (req, file, cb) {
@@ -90,6 +90,8 @@ router.get('/teacher_form', middleware.isLoggedIn, function (req, res) {
 
 router.post('/add_student', middleware.isLoggedIn, upload.single('image'), function (req, res) {
     const file = req.file
+    console.log(DOWNLOAD_PATH);
+    console.log(ENCODING_PATH);
     if (!file) {
         req.flash('error', "Image Not Uploaded");
         return res.redirect('/student_form');
