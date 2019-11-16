@@ -7,7 +7,7 @@ var express = require('express'),
     fs = require('fs'),
     path = require('path'),
     qrcode = require('qrcode-generator'),
-{ spawn } = require('child_process'),
+    { spawn } = require('child_process'),
     DOWNLOAD_PATH = require('../config').DOWNLOAD_PATH,
     ENCODING_PATH = require('../config').ENCODING_PATH;
 
@@ -17,7 +17,7 @@ const SECRET_KEY = process.env.SECRET_KEY || '123456';
 // Setting Storage
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        console.log("file uploaded to "+DOWNLOAD_PATH)
+        console.log("file uploaded to " + DOWNLOAD_PATH)
         cb(null, DOWNLOAD_PATH)
     },
     filename: function (req, file, cb) {
@@ -230,41 +230,36 @@ router.get('/api/qrcode/open', function (req, res) {
     let qr = qrcode(typeNumber, errorCorrectionLevel);
     qr.addData(message);
     qr.make();
-    let result = qr.createImgTag(5);
-    db.QR.remove({}, function(err,tmpQR){
-        if(err) {
-            res.status(500).json({'message': 'Internal Error'});
-        } else
-        {
-            db.QR.create({code: message }, function(err,newQR){
-                if(err) {
-                    console.log(err);
-                    res.status(500).json({'message': 'Unable to create QRCode'});
-                } else {
-                    res.status(200).send(result);
-                }
-            });
+    let result = {};
+    result.tag = qr.createImgTag(5);
+    result.code = message;
+    db.QR.create({ code: message, username: message }, function (err, newQR) {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ 'message': 'Unable to create QRCode' });
+        } else {
+            res.status(200).send(result);
         }
     });
 });
-router.get('/api/qrcode/close/:code', function(req,res) {
+router.get('/api/qrcode/close/:code', function (req, res) {
     let code = req.params.code;
-    db.QR.findOneAndRemove({code:code}, function(err, removedQR){
-        if(err) {
-            res.status(500).json({'message': 'Invalid QRCode!!'});
+    db.QR.findOneAndRemove({ code: code }, function (err, removedQR) {
+        if (err) {
+            res.status(500).json({ 'message': 'Invalid QRCode!!' });
         } else {
             res.status(200).json(removedQR);
         }
     });
 });
-router.get('/api/qrcode/:code/:registration', function(req,res) {
+router.get('/api/qrcode/:code/:registration', function (req, res) {
     let registration = req.params.registration;
     let code = req.params.code;
-    db.QR.findOneAndUpdate({code:code},{$addToSet: {students: registration} }, function(err,updatedQR){
-        if(err) {
-            res.status(500).json({'message': 'Invalid QRCode!!'});
+    db.QR.findOneAndUpdate({ code: code }, { $addToSet: { students: registration } }, function (err, updatedQR) {
+        if (err) {
+            res.status(500).json({ 'message': 'Invalid QRCode!!' });
         } else {
-            res.status(200).json({'message': 'Attendance Marked Successfully'});
+            res.status(200).json({ 'message': 'Attendance Marked Successfully' });
         }
     })
 });
