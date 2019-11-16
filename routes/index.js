@@ -9,7 +9,7 @@ var express = require('express'),
     qrcode = require('qrcode-generator'),
 { spawn } = require('child_process'),
     DOWNLOAD_PATH = require('../config').DOWNLOAD_PATH,
-    ENCODING_PATH = require('../config').ENCODING_PATH
+    ENCODING_PATH = require('../config').ENCODING_PATH;
 
 // Setting up Environment Variables
 const SECRET_KEY = process.env.SECRET_KEY || '123456';
@@ -206,16 +206,16 @@ router.get('/api/', function (req, res) {
             result.student = [];
         } else {
             result.student = studentData;
+            db.Teacher.find({}, function (err, teacherData) {
+                if (err) {
+                    result.teacher = [];
+                } else {
+                    result.teacher = teacherData;
+                    // console.log(teacherData);
+                    res.status(200).json(result);
+                }
+            });
             // console.log(studentData);
-        }
-    });
-    db.Teacher.find({}, function (err, teacherData) {
-        if (err) {
-            result.teacher = [];
-        } else {
-            result.teacher = teacherData;
-            // console.log(teacherData);
-            res.status(200).json(result);
         }
     });
     res.status(500);
@@ -231,11 +231,19 @@ router.get('/api/qrcode/open', function (req, res) {
     qr.addData(message);
     qr.make();
     let result = qr.createImgTag(5);
-    db.QR.create({code: message }, function(err,newQR){
+    db.QR.remove({}, function(err,tmpQR){
         if(err) {
-            res.status(500).json({'message': 'Unable to create QRCode'});
-        } else {
-            res.status(200).send(result);
+            res.status(500).json({'message': 'Internal Error'});
+        } else
+        {
+            db.QR.create({code: message }, function(err,newQR){
+                if(err) {
+                    console.log(err);
+                    res.status(500).json({'message': 'Unable to create QRCode'});
+                } else {
+                    res.status(200).send(result);
+                }
+            });
         }
     });
 });
