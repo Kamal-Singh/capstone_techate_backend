@@ -223,8 +223,8 @@ router.get('/api/', function (req, res) {
 
 // QR CODE
 router.get('/api/qrcode/open', function (req, res) {
-    // let message = Date.now().toString();
-    let message = '123456';
+    let message = Date.now().toString();
+    // let message = '123456';
     let typeNumber = 4;
     let errorCorrectionLevel = 'L';
     let qr = qrcode(typeNumber, errorCorrectionLevel);

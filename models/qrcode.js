@@ -3,8 +3,7 @@ const   mongoose = require('mongoose')
 let Schema = new mongoose.Schema({
     code: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     students: [{
         type: String
