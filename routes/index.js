@@ -313,7 +313,9 @@ router.post('/api/testimage', upload.single('image'), (req,res,next) => {
                   if(err) {
                     res.status(500).send({'message': 'Some Error Occured!!'});
                   } else {
-                      res.status(200).send(faces);
+                      res.writeHead(301, {Location: '/presentFaces'});
+                      res.end();
+                    //   res.status(200).send(faces);
                   }
               })
           }
