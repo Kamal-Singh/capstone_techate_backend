@@ -33,7 +33,7 @@ create_encoding_script = function (file_path, save_path, person_name) {
 }
 
 check_image_script = function (file_path, encodings_path) {
-    return spawn('python3', ["-u", path.join(__dirname, './scripts/check_image.py'),
+    return spawn('python3', ["-u", path.join(__dirname, '../scripts/check_image.py'),
         file_path, encodings_path], { stdio: [null, null, null, 'ipc'] });
 }
 
