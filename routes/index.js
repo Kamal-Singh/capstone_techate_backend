@@ -183,6 +183,7 @@ router.post('/update_images', middleware.isLoggedIn, upload.single('image'), fun
     req.flash('success', "Image Updated Sucessfully");
     res.redirect('/home');
 });
+
 //  Logout 
 router.get('/logout', function (req, res) {
     req.logout();
@@ -258,5 +259,52 @@ router.get('/api/qrcode/:code/:registration', function (req, res) {
             res.status(200).json({ 'message': 'Attendance Marked Successfully' });
         }
     })
+});
+
+// router.post('/api/qrcode/',function(req,res){
+//     let date = Date.now().getDate();
+//     date = toString(date);
+//     let obj = {
+//         date: date,
+//         username: date,
+//         students: req.body 
+//     };
+//     db.Attendance.create(obj,function(err,newAtt){
+//         if(err)
+//         {
+//             res.status(500).send({'message': 'Internal Server Error'});
+//         } else {
+//             res.status(200);
+//         }
+//     });
+// });
+
+// Testing Image for Known Person
+router.post('/api/testimage', upload.single('image'), (req,res,next) => {
+    const file = req.file
+    if(!file)
+    {
+      const error = new Error("File Not Uploaded")
+      error.httpStausCode = 400
+      return next(error)
+    }
+    // console.log("Found Image");
+    let file_path = file.path
+    let faces = []
+    const subprocess = check_image_script(file_path,ENCODING_PATH)
+    subprocess.stdout.on('data', (data) => {
+      console.log(`${data}`);
+      tmp = `${data}`;
+      faces.push(tmp);
+    });
+    subprocess.stderr.on('data', (data) => {
+      console.log(`error:${data}`);
+    });
+    subprocess.stderr.on('close', () => {
+      console.log("Spawn Completed");
+      faces = faces.map((i) => { return i.replace(/\n|\r/g, ""); });
+      console.log(faces);
+    });
+    res.send(faces);
 });
 module.exports = router;

@@ -6,7 +6,7 @@ let Schema = new mongoose.Schema({
         required: true
     },
     registration: {
-        type: Number,
+        type: String,
         required: true
     },
     password: {
