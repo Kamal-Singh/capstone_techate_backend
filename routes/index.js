@@ -313,7 +313,7 @@ router.post('/api/testimage', upload.single('image'), (req,res,next) => {
                   if(err) {
                     res.status(500).send({'message': 'Some Error Occured!!'});
                   } else {
-                      res.writeHead(301, {Location: 'http://localhost:4200/presentFaces'});
+                      res.writeHead(301, {Location: 'http://techate-front.herokuapp.com/presentFaces'});
                       res.end();
                     //   res.status(200).send(faces);
                   }
